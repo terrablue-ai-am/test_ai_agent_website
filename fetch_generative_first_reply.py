@@ -36,7 +36,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
     return pool
 
 # Fetch list of pending cfids with optional filters
-def get_filtered_cfid_list(ptitle_filter=None, rating_filter=None):
+def get_filtered_cfid_list(ptitle_filter=None, rating_filter=None, start_date=None, end_date=None):
     pool = connect_with_connector()
     with pool.connect() as conn:
         conditions = ["(acategory IS NULL OR acategory = '' OR adescription IS NULL OR adescription = '')"]
@@ -58,6 +58,15 @@ def get_filtered_cfid_list(ptitle_filter=None, rating_filter=None):
 
             if has_null:
                 conditions.append("rating IS NULL")
+        
+        if start_date:
+            conditions.append("DATE(dateupdated) >= :start_date")
+            params["start_date"] = start_date
+
+        if end_date:
+            conditions.append("DATE(dateupdated) <= :end_date")
+            params["end_date"] = end_date
+
 
         where_clause = " AND ".join(f"({c})" for c in conditions)
 
@@ -108,6 +117,9 @@ def fetch_gfr_tickets(request):
         cfid = request.args.get("cfid")
         ptitle_filter = request.args.get("ptitle")
         rating_filter = request.args.get("rating")
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
 
         if cfid:
             data = get_ticket_details(cfid)
@@ -116,7 +128,7 @@ def fetch_gfr_tickets(request):
             else:
                 return jsonify({"status": "not_found"}), 404, headers
         else:
-            data = get_filtered_cfid_list(ptitle_filter, rating_filter)
+            data = get_filtered_cfid_list(ptitle_filter, rating_filter, start_date, end_date)
             return jsonify({"status": "success", "data": data}), 200, headers
 
     except Exception as e:

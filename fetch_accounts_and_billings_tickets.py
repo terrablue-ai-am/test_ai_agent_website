@@ -36,7 +36,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
     return pool
 
 # Function to fetch filtered cfids
-def get_filtered_ab_cfid_list(ptitle_filter=None, cr_filter=None, srr_filter=None):
+def get_filtered_ab_cfid_list(ptitle_filter=None, cr_filter=None, srr_filter=None, start_date=None, end_date=None):
     pool = connect_with_connector()
     with pool.connect() as conn:
         conditions = ["(acategory IS NULL OR acategory = '' OR adescription IS NULL OR adescription = '')"]
@@ -56,6 +56,15 @@ def get_filtered_ab_cfid_list(ptitle_filter=None, cr_filter=None, srr_filter=Non
             srr_list = srr_filter.split(",")
             conditions.append("saved_reply_rating IN :srr")
             params["srr"] = tuple(srr_list)
+
+        if start_date:
+            conditions.append("DATE(dateupdated) >= :start_date")
+            params["start_date"] = start_date
+
+        if end_date:
+            conditions.append("DATE(dateupdated) <= :end_date")
+            params["end_date"] = end_date
+
 
         where_clause = " AND ".join(f"({c})" for c in conditions)
 
@@ -106,6 +115,8 @@ def fetch_accounts_and_billings_tickets(request):
         ptitle_filter = request.args.get("ptitle")
         cr_filter = request.args.get("categorization_rating")
         srr_filter = request.args.get("saved_reply_rating")
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
 
         if cfid:
             data = get_ticket_details(cfid)
@@ -114,7 +125,7 @@ def fetch_accounts_and_billings_tickets(request):
             else:
                 return jsonify({"status": "not_found"}), 404, headers
         else:
-            data = get_filtered_ab_cfid_list(ptitle_filter, cr_filter, srr_filter)
+            data = get_filtered_ab_cfid_list(ptitle_filter, cr_filter, srr_filter, start_date, end_date)
             return jsonify({"status": "success", "data": data}), 200, headers
 
     except Exception as e:

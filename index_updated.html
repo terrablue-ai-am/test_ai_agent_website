@@ -267,6 +267,13 @@
       </button>
     </div>
 
+    <div style="margin-top: 15px">
+      <label><strong>Date Range:</strong></label
+      ><br />
+      <input type="date" id="startDate" /> to
+      <input type="date" id="endDate" />
+    </div>
+
     <script>
       const fetchTicketsURL =
         "https://fetch-pending-audit-tickets-706657463616.us-central1.run.app";
@@ -534,6 +541,9 @@
           (cb) => cb.value
         );
 
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
         let url =
           "https://fetch-generative-first-reply-tickets-706657463616.us-central1.run.app";
 
@@ -545,6 +555,14 @@
 
         if (selectedRatings.length > 0) {
           params.append("rating", selectedRatings.join(","));
+        }
+
+        if (startDate) {
+          params.append("start_date", startDate);
+        }
+
+        if (endDate) {
+          params.append("end_date", endDate);
         }
 
         fetch(`${url}?${params.toString()}`, { mode: "cors" })
@@ -577,6 +595,9 @@
         const selectedCR = Array.from(crCheckboxes).map((cb) => cb.value);
         const selectedSRR = Array.from(srrCheckboxes).map((cb) => cb.value);
 
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
         let url =
           "https://fetch-accounts-and-billings-tickets-706657463616.us-central1.run.app";
 
@@ -592,6 +613,14 @@
 
         if (selectedSRR.length > 0) {
           params.append("saved_reply_rating", selectedSRR.join(","));
+        }
+
+        if (startDate) {
+          params.append("start_date", startDate);
+        }
+
+        if (endDate) {
+          params.append("end_date", endDate);
         }
 
         fetch(`${url}?${params.toString()}`, { mode: "cors" })
@@ -659,6 +688,9 @@
           (cb) => cb.value
         );
 
+        const startDate = document.getElementById("startDate").value;
+        const endDate = document.getElementById("endDate").value;
+
         let url =
           "https://fetch-skipped-or-spam-tickets-706657463616.us-central1.run.app";
 
@@ -670,6 +702,14 @@
 
         if (selectedReasons.length > 0) {
           params.append("reason", selectedReasons.join(","));
+        }
+
+        if (startDate) {
+          params.append("start_date", startDate);
+        }
+
+        if (endDate) {
+          params.append("end_date", endDate);
         }
 
         fetch(`${url}?${params.toString()}`, { mode: "cors" })

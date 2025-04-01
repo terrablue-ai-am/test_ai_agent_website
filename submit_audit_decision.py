@@ -35,17 +35,36 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
     )
     return pool
 
-# Function to update feedback in a specified table
+# Function to update both Feedback_Collection and the main table
 def update_feedback_in_db(table, feedback_data):
     pool = connect_with_connector()
+
     try:
         with pool.connect() as conn:
-            query = f"""
-                UPDATE `sav2_responses`.`{table}`
-                SET acategory = :audit_category, adescription = :audit_description
-                WHERE cfid = :cfid;
-            """
-            conn.execute(sqlalchemy.text(query), feedback_data)
+            # Update Feedback_Collection (using cid = cfid)
+            conn.execute(
+                sqlalchemy.text(
+                    """
+                    UPDATE `sav2_responses_staging`.`Feedback_Collection`
+                    SET audit_category = :audit_category, audit_description = :audit_description
+                    WHERE cid = :cfid
+                    """
+                ),
+                parameters=feedback_data
+            )
+
+            # Update the main table (using cfid)
+            conn.execute(
+                sqlalchemy.text(
+                    f"""
+                    UPDATE `sav2_responses`.`{table}`
+                    SET acategory = :audit_category, adescription = :audit_description
+                    WHERE cfid = :cfid
+                    """
+                ),
+                parameters=feedback_data
+            )
+
             conn.commit()
             return True
     except Exception as e:

@@ -36,7 +36,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
     return pool
 
 # Fetch filtered cfid list
-def get_filtered_sos_cfid_list(ptitle_filter=None, reason_filter=None):
+def get_filtered_sos_cfid_list(ptitle_filter=None, reason_filter=None, start_date=None, end_date=None):
     pool = connect_with_connector()
     with pool.connect() as conn:
         conditions = ["(acategory IS NULL OR acategory = '' OR adescription IS NULL OR adescription = '')"]
@@ -51,6 +51,15 @@ def get_filtered_sos_cfid_list(ptitle_filter=None, reason_filter=None):
             reason_values = reason_filter.split(",")
             conditions.append("reason IN :reasons")
             params["reasons"] = tuple(reason_values)
+        
+        if start_date:
+            conditions.append("DATE(dateupdated) >= :start_date")
+            params["start_date"] = start_date
+
+        if end_date:
+            conditions.append("DATE(dateupdated) <= :end_date")
+            params["end_date"] = end_date
+
 
         where_clause = " AND ".join(f"({c})" for c in conditions)
 
@@ -101,6 +110,9 @@ def fetch_skipped_or_spam_tickets(request):
         cfid = request.args.get("cfid")
         ptitle_filter = request.args.get("ptitle")
         reason_filter = request.args.get("reason")
+        start_date = request.args.get("start_date")
+        end_date = request.args.get("end_date")
+
 
         if cfid:
             data = get_ticket_details(cfid)
@@ -109,7 +121,7 @@ def fetch_skipped_or_spam_tickets(request):
             else:
                 return jsonify({"status": "not_found"}), 404, headers
         else:
-            data = get_filtered_sos_cfid_list(ptitle_filter, reason_filter)
+            data = get_filtered_sos_cfid_list(ptitle_filter, reason_filter, start_date, end_date)
             return jsonify({"status": "success", "data": data}), 200, headers
 
     except Exception as e:
