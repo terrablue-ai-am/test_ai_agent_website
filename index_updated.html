@@ -104,11 +104,7 @@
       <h2 id="tableHeading">Pending Audit Tickets</h2>
 
       <table id="ticketTable">
-        <thead>
-          <tr>
-            <th>CID</th>
-          </tr>
-        </thead>
+        <thead id="ticketTableHead"></thead>
         <tbody id="ticketList"></tbody>
       </table>
 
@@ -310,13 +306,31 @@
 
       function displayTickets(tickets) {
         const ticketList = document.getElementById("ticketList");
+        const ticketTableHead = document.getElementById("ticketTableHead");
         ticketList.innerHTML = "";
+        ticketTableHead.innerHTML = "";
 
+        // Define header
+        const showComments = selectedTable !== "skipped_or_spam";
+        const headerRow = document.createElement("tr");
+        headerRow.innerHTML = `<th>CID</th>${
+          showComments ? "<th>Comments</th>" : ""
+        }`;
+        ticketTableHead.appendChild(headerRow);
+
+        // Render rows
         tickets.forEach((ticket) => {
           const row = document.createElement("tr");
           row.classList.add("ticket-row");
-          row.innerHTML = `<td>${ticket.cfid}</td>`;
           row.onclick = () => fetchFullTicketDetails(ticket.cfid);
+          row.innerHTML = `
+      <td>${ticket.cfid}</td>
+      ${
+        showComments
+          ? `<td>${ticket.comments ? ticket.comments : "—"}</td>`
+          : ""
+      }
+    `;
           ticketList.appendChild(row);
         });
       }
@@ -469,7 +483,16 @@
       function returnToTicketList() {
         document.getElementById("auditForm").classList.add("hidden");
         document.getElementById("ticketTable").classList.remove("hidden");
-        fetchTickets();
+
+        if (selectedTable === "generative_first_reply") {
+          applyFilters();
+        } else if (selectedTable === "accounts_and_billings") {
+          applyABFilters();
+        } else if (selectedTable === "skipped_or_spam") {
+          applySOSFilters();
+        } else {
+          fetchTickets(); // fallback
+        }
       }
 
       function loadTickets() {

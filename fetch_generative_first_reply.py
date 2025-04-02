@@ -73,7 +73,7 @@ def get_filtered_cfid_list(ptitle_filter=None, rating_filter=None, start_date=No
         rows = conn.execute(
             sqlalchemy.text(
                 f"""
-                SELECT cfid
+                SELECT cfid, comments
                 FROM `sav2_responses`.`generative_first_reply`
                 WHERE {where_clause}
                 ORDER BY dateupdated ASC;

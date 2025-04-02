@@ -71,7 +71,7 @@ def get_filtered_ab_cfid_list(ptitle_filter=None, cr_filter=None, srr_filter=Non
         rows = conn.execute(
             sqlalchemy.text(
                 f"""
-                SELECT cfid
+                SELECT cfid, comments
                 FROM `sav2_responses`.`accounts_and_billings`
                 WHERE {where_clause}
                 ORDER BY dateupdated ASC;
