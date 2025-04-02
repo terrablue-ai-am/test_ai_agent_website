@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+node_modules/
+
+test.html
+index_updated.html
+fetch_accounts_and_billings_tickets.py
+fetch_generative_first_reply.py
+fetch_skipped_or_spam.py
+submit_audit_decision.py
+/requirements.txt
